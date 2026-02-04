@@ -1,0 +1,31 @@
+{
+  "name": "platform-ai",
+  "version": "1.0.0",
+  "description": "PlatformAI - Intelligent SaaS assistant with Ollama integration",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "client": "cd client && npm run dev",
+    "client:install": "cd client && npm install",
+    "client:build": "cd client && npm run build",
+    "setup": "npm install && npm run client:install"
+  },
+  "keywords": [
+    "ai",
+    "ollama",
+    "llama",
+    "mistral",
+    "saas",
+    "automation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "ollama": "^0.5.9"
+  }
+}
