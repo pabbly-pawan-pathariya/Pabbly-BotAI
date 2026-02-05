@@ -9,7 +9,17 @@ export async function sendMessage(message) {
     body: JSON.stringify({ message }),
   });
 
-  const data = await response.json();
+  const text = await response.text();
+  let data;
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(
+      response.ok
+        ? 'Invalid response from server. Please try again.'
+        : `Request failed: ${response.status} ${response.statusText}`
+    );
+  }
 
   if (!response.ok) {
     throw new Error(data.error || 'Failed to send message');
@@ -21,7 +31,13 @@ export async function sendMessage(message) {
 export async function checkHealth() {
   try {
     const response = await fetch('/health');
-    const data = await response.json();
+    const text = await response.text();
+    let data = {};
+    try {
+      data = text ? JSON.parse(text) : {};
+    } catch {
+      return { status: 'error', error: 'Invalid health response' };
+    }
     return data;
   } catch (error) {
     return { status: 'error', error: error.message };

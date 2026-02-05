@@ -13,6 +13,20 @@ export function validateResponse(responseText) {
     };
   }
 
+  // Normalize mode: handle case variations and common typos
+  if (parsed.mode) {
+    const modeUpper = String(parsed.mode).toUpperCase().trim();
+    if (modeUpper.includes('QNA') || modeUpper === 'Q&A' || modeUpper === 'QA') {
+      parsed.mode = 'QNA';
+    } else if (modeUpper.includes('WORKFLOW') || modeUpper.includes('AUTOMATION')) {
+      parsed.mode = 'WORKFLOW';
+    } else if (modeUpper.includes('TASK') || modeUpper.includes('ACTION')) {
+      parsed.mode = 'TASK';
+    } else if (VALID_MODES.includes(modeUpper)) {
+      parsed.mode = modeUpper;
+    }
+  }
+  
   if (!parsed.mode || !VALID_MODES.includes(parsed.mode)) {
     return {
       valid: false,
@@ -21,10 +35,15 @@ export function validateResponse(responseText) {
     };
   }
 
-  if (!parsed.data || typeof parsed.data !== 'object') {
+  // More lenient: allow missing data or non-object data, we'll fix it in the route
+  if (!parsed.data) {
+    parsed.data = {}; // Auto-create empty data object
+  }
+  
+  if (typeof parsed.data !== 'object' || Array.isArray(parsed.data)) {
     return {
       valid: false,
-      error: 'Missing or invalid data object',
+      error: 'Invalid data object (must be an object, not array or primitive)',
       raw: parsed
     };
   }
@@ -55,12 +74,37 @@ function validateModeData(mode, data) {
 }
 
 function validateQNA(data) {
+  // Auto-fix: create answer if missing
   if (!data.answer || typeof data.answer !== 'string') {
-    return {
-      valid: false,
-      error: 'QNA response must have an "answer" string'
-    };
+    // Check if answer exists as a different field name
+    const possibleAnswerFields = ['response', 'text', 'content', 'message', 'reply'];
+    let foundAnswer = null;
+    
+    for (const field of possibleAnswerFields) {
+      if (data[field] && typeof data[field] === 'string') {
+        foundAnswer = data[field];
+        break;
+      }
+    }
+    
+    if (foundAnswer) {
+      data.answer = foundAnswer;
+    } else {
+      return {
+        valid: false,
+        error: 'QNA response must have an "answer" string'
+      };
+    }
   }
+  
+  // Ensure arrays exist
+  if (!Array.isArray(data.related_features)) {
+    data.related_features = [];
+  }
+  if (!Array.isArray(data.follow_up_suggestions)) {
+    data.follow_up_suggestions = [];
+  }
+  
   return { valid: true };
 }
 
