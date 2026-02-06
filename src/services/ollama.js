@@ -2,7 +2,7 @@ import { getSystemPrompt } from '../prompts/system-prompt.js';
 
 export async function chat(userMessage) {
   const host = process.env.OLLAMA_HOST || 'http://127.0.0.1:11434';
-  const model = process.env.OLLAMA_MODEL || 'llama3.2';
+  const model = process.env.OLLAMA_MODEL || 'qwen2.5-coder:3b';
   const timeout = parseInt(process.env.OLLAMA_TIMEOUT) || 60000; // 60 seconds default
 
   // Create AbortController for timeout
